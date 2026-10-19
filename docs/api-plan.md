@@ -84,43 +84,51 @@ The TenantGuard API follows standard RESTful principles over HTTPS:
 
 ---
 
-### 2.4. User & Team Management (`/api/v1/users` & `/api/v1/invitations`)
+### 2.4. Team Management (`/api/team`) & Invitations (`/api/invitations`)
 
+#### Team Management (`/api/team`)
 | Method | Path | Auth | Minimum Role | Description |
 | :--- | :--- | :---: | :---: | :--- |
-| `GET` | `/users` | Authenticated | Any | List active members of the current tenant organization. |
-| `GET` | `/users/:id` | Authenticated | Any | Retrieve user profile within the organization. |
-| `PATCH`| `/users/:id/role` | Authenticated | `org_admin` | Update user role (`org_admin`, `project_manager`, `member`, `viewer`). |
-| `DELETE`| `/users/:id` | Authenticated | `org_admin` | Deactivate/remove a user from the organization. |
-| `GET` | `/invitations` | Authenticated | `org_admin` | List pending invitations for the organization. |
-| `POST` | `/invitations` | Authenticated | `org_admin` | Issue a new organization invitation to an email with assigned role. |
-| `DELETE`| `/invitations/:id` | Authenticated | `org_admin` | Revoke a pending invitation. |
-| `GET` | `/invitations/verify/:token`| Public | None | Verify invitation token validity before signup. |
-| `POST` | `/invitations/accept` | Public | None | Complete signup using an invitation token. |
+| `GET` | `/api/team/members` | Authenticated | `viewer` | List members of current tenant organization (paginated, search). |
+| `GET` | `/api/team/members/:id` | Authenticated | `viewer` | Retrieve member profile within organization (404 for cross-tenant). |
+| `PATCH`| `/api/team/members/:id/role` | Authenticated | `org_admin` | Update member role (`org_admin`, `project_manager`, `member`, `viewer`). Increments `tokenVersion` to invalidate stale sessions. Blocks self-modification & demotion of last active admin. |
+| `PATCH`| `/api/team/members/:id/status`| Authenticated | `org_admin` | Update member status (`active`, `suspended`). Increments `tokenVersion` on deactivation. Blocks self-deactivation & deactivation of last active admin. |
+
+#### Invitations Workflow (`/api/invitations`)
+| Method | Path | Auth | Minimum Role | Description |
+| :--- | :--- | :---: | :---: | :--- |
+| `POST` | `/api/invitations` | Authenticated | `org_admin` | Issue a single-use 24h invitation. Generates cryptographically secure token, stores only SHA-256 hash. Returns rawToken for development link. |
+| `GET` | `/api/invitations` | Authenticated | `org_admin` | List invitations for current organization (pending, accepted, expired, revoked). Token hash is never exposed. |
+| `PATCH`| `/api/invitations/:id/revoke` | Authenticated | `org_admin` | Revoke a pending invitation. |
+| `DELETE`| `/api/invitations/:id` | Authenticated | `org_admin` | Revoke a pending invitation. |
+| `GET` | `/api/invitations/verify/:token`| Public | None | Verify token validity (returns organization name, invitee email, and role). |
+| `POST` | `/api/invitations/accept` | Public | None | Single-use invitation acceptance. Creates user, assigns role on server, marks invitation accepted atomically, sets session cookies. |
 
 ---
 
-### 2.5. Projects (`/api/v1/projects`)
+### 2.5. Projects Management (`/api/projects`)
 
 | Method | Path | Auth | Minimum Role | Description |
 | :--- | :--- | :---: | :---: | :--- |
-| `GET` | `/projects` | Authenticated | `viewer` | List projects belonging to the current organization (paginated). |
-| `POST` | `/projects` | Authenticated | `project_manager` | Create a new project within the organization. |
-| `GET` | `/projects/:id` | Authenticated | `viewer` | Retrieve project details by ID (enforces tenant match). |
-| `PATCH`| `/projects/:id` | Authenticated | `project_manager` | Update project metadata or status (enforces tenant match). |
-| `DELETE`| `/projects/:id` | Authenticated | `org_admin` | Archive or delete a project (enforces tenant match). |
+| `GET` | `/api/projects` | Authenticated | `viewer` | List projects belonging to the current organization (paginated, search, status filter). |
+| `GET` | `/api/projects/:id` | Authenticated | `viewer` | Retrieve project details by ID (TenantGuard strictly enforces organization match; returns 404 for cross-tenant probes). |
+| `POST` | `/api/projects` | Authenticated | `project_manager` | Create a new project. Validates key uniqueness per organization and ensures all assigned members belong to the organization. |
+| `PATCH`| `/api/projects/:id` | Authenticated | `project_manager` | Update project name, description, status, or member assignments. |
+| `PUT`  | `/api/projects/:id` | Authenticated | `project_manager` | Full update of project details. |
+| `DELETE`| `/api/projects/:id` | Authenticated | `project_manager` | Delete a project and cascade-delete its tasks (strictly tenant-scoped). |
 
 ---
 
-### 2.6. Tasks (`/api/v1/tasks`)
+### 2.6. Tasks Management (`/api/tasks`)
 
 | Method | Path | Auth | Minimum Role | Description |
 | :--- | :--- | :---: | :---: | :--- |
-| `GET` | `/tasks` | Authenticated | `viewer` | List tasks filtered by `projectId`, `status`, `assignedTo`. |
-| `POST` | `/tasks` | Authenticated | `member` | Create a new task within a project. |
-| `GET` | `/tasks/:id` | Authenticated | `viewer` | Retrieve task details by ID (enforces tenant match). |
-| `PATCH`| `/tasks/:id` | Authenticated | `member` | Update task status, priority, or assignee. |
-| `DELETE`| `/tasks/:id` | Authenticated | `project_manager` | Remove a task. |
+| `GET` | `/api/tasks` | Authenticated | `viewer` | List tasks filtered by `projectId`, `status`, `priority`, `assignedTo` (paginated). |
+| `GET` | `/api/tasks/:id` | Authenticated | `viewer` | Retrieve task details by ID (enforces tenant match; returns 404 for cross-tenant probes). |
+| `POST` | `/api/tasks` | Authenticated | `member` | Create a new task within a project. Validates parent project and assignee belong to current organization. Assigns sequential `taskNumber`. |
+| `PATCH`| `/api/tasks/:id` | Authenticated | `member` | Update task details, status, priority, due date, or assignee. Moving to another project verifies target project belongs to tenant. |
+| `PUT`  | `/api/tasks/:id` | Authenticated | `member` | Full update of task details. |
+| `DELETE`| `/api/tasks/:id` | Authenticated | `project_manager` | Delete a task (restricted to `org_admin` and `project_manager`; members denied with 403). |
 
 ---
 

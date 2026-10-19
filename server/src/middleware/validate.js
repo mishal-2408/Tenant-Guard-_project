@@ -20,8 +20,9 @@ export const validate = (schema) => async (req, res, next) => {
     next();
   } catch (error) {
     if (error instanceof ZodError) {
-      const formattedErrors = error.errors.map((err) => ({
-        field: err.path.slice(1).join('.'), // Strip 'body' or 'query' prefix
+      const issues = error.errors || error.issues || [];
+      const formattedErrors = issues.map((err) => ({
+        field: err.path ? err.path.slice(1).join('.') : '', // Strip 'body' or 'query' prefix
         message: err.message
       }));
 

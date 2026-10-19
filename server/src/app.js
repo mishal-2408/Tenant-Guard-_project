@@ -4,6 +4,10 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import healthRoutes from './routes/health.routes.js';
 import authRoutes from './routes/auth.routes.js';
+import projectRoutes from './routes/project.routes.js';
+import taskRoutes from './routes/task.routes.js';
+import teamRoutes from './routes/team.routes.js';
+import invitationRoutes from './routes/invitation.routes.js';
 import { notFoundHandler } from './middleware/notFound.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
@@ -36,6 +40,10 @@ app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 // 5. API Routes
 app.use('/api', healthRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/projects', projectRoutes);
+app.use('/api/tasks', taskRoutes);
+app.use('/api/team', teamRoutes);
+app.use('/api/invitations', invitationRoutes);
 
 // Root route
 app.get('/', (req, res) => {

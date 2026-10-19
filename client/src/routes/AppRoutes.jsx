@@ -6,6 +6,7 @@ import AppLayout from '../components/layout/AppLayout.jsx';
 // Pages
 import Login from '../pages/auth/Login.jsx';
 import Register from '../pages/auth/Register.jsx';
+import AcceptInvitation from '../pages/auth/AcceptInvitation.jsx';
 import Dashboard from '../pages/dashboard/Dashboard.jsx';
 import Projects from '../pages/projects/Projects.jsx';
 import Tasks from '../pages/tasks/Tasks.jsx';
@@ -33,6 +34,10 @@ export const AppRoutes = () => {
             <Register />
           </PublicOnlyRoute>
         }
+      />
+      <Route
+        path="/accept-invitation"
+        element={<AcceptInvitation />}
       />
 
       {/* Authenticated Workspace Application Routes */}
