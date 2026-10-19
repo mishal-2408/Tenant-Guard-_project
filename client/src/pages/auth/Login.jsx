@@ -21,18 +21,27 @@ export const Login = () => {
 
   const from = location.state?.from?.pathname || '/dashboard';
 
+  const fillDemoAccount = (demoEmail) => {
+    setEmail(demoEmail);
+    setPassword('DemoPassword123!');
+    setErrorMessage('');
+  };
+
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage('');
 
-    if (!email.trim() || !password) {
+    const cleanEmail = email.trim();
+    const cleanPassword = password.trim();
+
+    if (!cleanEmail || !cleanPassword) {
       setErrorMessage('Please provide both your email address and password.');
       return;
     }
 
     setIsLoading(true);
     try {
-      const res = await login({ email: email.trim(), password });
+      const res = await login({ email: cleanEmail, password: cleanPassword });
       if (res?.mfaRequired) {
         setIsMfaStep(true);
         setMfaToken(res.mfaToken);
@@ -267,6 +276,70 @@ export const Login = () => {
                 Back to Sign In
               </button>
             </form>
+          )}
+
+          {/* Quick Demo Accounts Selection */}
+          {!isMfaStep && (
+            <div style={{
+              marginTop: '1.25rem',
+              padding: '0.85rem',
+              borderRadius: 'var(--radius-md)',
+              backgroundColor: 'var(--bg-secondary)',
+              border: '1px solid var(--border-light)'
+            }}>
+              <div style={{
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                color: 'var(--text-muted)',
+                marginBottom: '0.5rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <span>⚡ 1-Click Demo Accounts</span>
+                <span style={{ fontSize: '0.7rem', color: 'var(--primary)', fontWeight: 500 }}>Auto-fills Form</span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem' }}>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  style={{ fontSize: '0.75rem', padding: '0.4rem', justifyContent: 'center' }}
+                  onClick={() => fillDemoAccount('alice.admin@cybercorp.demo')}
+                  title="Org Admin - Full Access (CyberCorp)"
+                >
+                  👑 Alice (Admin)
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  style={{ fontSize: '0.75rem', padding: '0.4rem', justifyContent: 'center' }}
+                  onClick={() => fillDemoAccount('bob.pm@cybercorp.demo')}
+                  title="Project Manager (CyberCorp)"
+                >
+                  💼 Bob (PM)
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  style={{ fontSize: '0.75rem', padding: '0.4rem', justifyContent: 'center' }}
+                  onClick={() => fillDemoAccount('charlie.dev@cybercorp.demo')}
+                  title="Developer / Member (CyberCorp)"
+                >
+                  💻 Charlie (Dev)
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  style={{ fontSize: '0.75rem', padding: '0.4rem', justifyContent: 'center' }}
+                  onClick={() => fillDemoAccount('eve.admin@apexshield.demo')}
+                  title="ApexShield Admin (Tenant Isolation Test)"
+                >
+                  🏢 Eve (ApexShield)
+                </button>
+              </div>
+            </div>
           )}
 
           {/* Registration Link (Only shown on password step) */}
