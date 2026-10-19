@@ -17,7 +17,9 @@ const securityEventSchema = new mongoose.Schema(
           'BRUTE_FORCE_LOCKOUT',
           'MFA_DISABLED',
           'SUSPICIOUS_TOKEN_REUSE',
-          'UNAUTHORIZED_CROSS_TENANT_PROBE'
+          'UNAUTHORIZED_CROSS_TENANT_PROBE',
+          'CROSS_TENANT_ACCESS_DENIED',
+          'RBAC_ACCESS_DENIED'
         ],
         message: '{VALUE} is not a valid security event type'
       }

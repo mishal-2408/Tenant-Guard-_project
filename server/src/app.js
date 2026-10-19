@@ -1,11 +1,16 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import healthRoutes from './routes/health.routes.js';
+import authRoutes from './routes/auth.routes.js';
 import { notFoundHandler } from './middleware/notFound.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
+
+// Set trust proxy for deployment and secure cookie rate limiting
+app.set('trust proxy', 1);
 
 // 1. Security HTTP Headers
 app.use(helmet());
@@ -17,16 +22,20 @@ app.use(
     origin: allowedOrigin,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-XSRF-TOKEN', 'X-CSRF-Token']
   })
 );
 
-// 3. Request Body Parsing
+// 3. Cookie Parsing Middleware
+app.use(cookieParser());
+
+// 4. Request Body Parsing
 app.use(express.json({ limit: '100kb' }));
 app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 
-// 4. API Routes
+// 5. API Routes
 app.use('/api', healthRoutes);
+app.use('/api/auth', authRoutes);
 
 // Root route
 app.get('/', (req, res) => {

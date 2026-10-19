@@ -67,6 +67,10 @@ const userSchema = new mongoose.Schema(
     lastLoginAt: {
       type: Date,
       default: null
+    },
+    tokenVersion: {
+      type: Number,
+      default: 0
     }
   },
   {
@@ -81,6 +85,11 @@ const userSchema = new mongoose.Schema(
     }
   }
 );
+
+// Helper method to check if the user account is temporarily locked
+userSchema.methods.isLocked = function () {
+  return !!(this.lockUntil && this.lockUntil > Date.now());
+};
 
 // Compound Indexes for Tenant Isolation and Performance
 // 1. Organization-scoped email uniqueness: Enforces that an email is unique within the organization.
