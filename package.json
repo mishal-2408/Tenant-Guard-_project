@@ -1,0 +1,28 @@
+{
+  "name": "tenantguard-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "TenantGuard - A Secure Multi-Tenant Workspace Portal and API",
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "dev:server": "npm run dev --workspace=server",
+    "dev:client": "npm run dev --workspace=client",
+    "dev": "npm run dev --workspace=server",
+    "test": "npm run test --workspace=server",
+    "lint": "echo \"Linting workspaces...\""
+  },
+  "keywords": [
+    "multi-tenant",
+    "rbac",
+    "tenant-isolation",
+    "security-center",
+    "express",
+    "react",
+    "mongodb"
+  ],
+  "author": "TenantGuard Engineering",
+  "license": "ISC"
+}
