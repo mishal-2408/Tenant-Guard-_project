@@ -9,6 +9,8 @@ import taskRoutes from './routes/task.routes.js';
 import teamRoutes from './routes/team.routes.js';
 import invitationRoutes from './routes/invitation.routes.js';
 import securityRoutes from './routes/security.routes.js';
+import swaggerUi from 'swagger-ui-express';
+import { openapiSpec } from './docs/openapi.js';
 import { notFoundHandler } from './middleware/notFound.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
@@ -17,8 +19,19 @@ const app = express();
 // Set trust proxy for deployment and secure cookie rate limiting
 app.set('trust proxy', 1);
 
-// 1. Security HTTP Headers
-app.use(helmet());
+// 1. Security HTTP Headers with CSP adjusted for Swagger UI assets
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:", "validator.swagger.io"]
+      }
+    }
+  })
+);
 
 // 2. Cross-Origin Resource Sharing (CORS) with origin allow-list
 const allowedOrigin = process.env.CLIENT_URL || 'http://localhost:5173';
@@ -46,6 +59,13 @@ app.use('/api/tasks', taskRoutes);
 app.use('/api/team', teamRoutes);
 app.use('/api/invitations', invitationRoutes);
 app.use('/api/security', securityRoutes);
+
+// OpenAPI Specification & Interactive Swagger UI
+app.get('/api/docs.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(openapiSpec);
+});
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openapiSpec));
 
 // Root route
 app.get('/', (req, res) => {

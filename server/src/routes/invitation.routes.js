@@ -15,6 +15,7 @@ const router = express.Router();
 // ==========================================
 
 router.get('/verify/:token', authLimiter, invitationController.verifyInvitation);
+router.get('/validate/:token', authLimiter, invitationController.verifyInvitation);
 router.post('/accept', authLimiter, validate(acceptInvitationSchema), invitationController.acceptInvitation);
 
 // ==========================================
