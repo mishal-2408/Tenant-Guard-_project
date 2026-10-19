@@ -20,17 +20,18 @@ const DEFAULT_EXPIRATION = process.env.JWT_ACCESS_EXPIRATION || '15m';
  * @param {Object} payload - User session context
  * @returns {string} Signed JWT
  */
-export const signAccessToken = (payload) => {
+export const signAccessToken = (payload, expiresIn = DEFAULT_EXPIRATION) => {
   const secret = getJwtSecret();
   const claims = {
     userId: payload.userId,
     organizationId: payload.organizationId,
     role: payload.role,
-    tokenVersion: payload.tokenVersion ?? 0
+    tokenVersion: payload.tokenVersion ?? 0,
+    ...(payload.isMfaPending ? { isMfaPending: true } : {})
   };
 
   return jwt.sign(claims, secret, {
-    expiresIn: DEFAULT_EXPIRATION,
+    expiresIn,
     algorithm: 'HS256'
   });
 };

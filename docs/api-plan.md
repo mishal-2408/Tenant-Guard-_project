@@ -190,3 +190,27 @@ This unique endpoint runs a safe, controlled synthetic security test:
 | `409 Conflict` | Unique conflict | Organization slug already taken, duplicate active invitation. |
 | `429 Too Many Requests`| Rate limit exceeded | Exceeded route rate limit threshold or locked out. |
 | `500 Server Error` | Internal error | Unhandled server exception (sanitized in response). |
+
+---
+
+## 8. Stage 6 Security Center & MFA Endpoints
+
+### 8.1 Multi-Factor Authentication (TOTP)
+| Method | Endpoint | Auth Required | RBAC Roles | Description |
+| :--- | :--- | :---: | :---: | :--- |
+| `POST` | `/api/auth/mfa/setup` | Yes | All Roles | Generates TOTP secret, QR code data URL, and otpauth URI. Secret is encrypted with AES-256-GCM. |
+| `POST` | `/api/auth/mfa/verify-setup` | Yes | All Roles | Verifies initial 6-digit TOTP code and activates `mfaEnabled: true`. |
+| `POST` | `/api/auth/mfa/verify-login` | Pre-Auth | All Roles | Exchanges restricted `mfaToken` and 6-digit TOTP code for full authenticated session cookies. |
+| `POST` | `/api/auth/mfa/disable` | Yes | All Roles | Requires account password and 6-digit TOTP code to disable MFA. |
+
+### 8.2 Security Center & Incident Management
+| Method | Endpoint | Auth Required | RBAC Roles | Description |
+| :--- | :--- | :---: | :---: | :--- |
+| `GET` | `/api/security/summary` | Yes | `org_admin` | Summary telemetry: total audit logs, active alerts, MFA adoption %, and isolation status. |
+| `GET` | `/api/security/audit-logs` | Yes | `org_admin` | Filterable, paginated audit log stream scoped strictly to authenticated tenant. |
+| `GET` | `/api/security/audit-logs/export` | Yes | `org_admin` | Streams filtered tenant audit records as a CSV download (max 1,000 entries). |
+| `GET` | `/api/security/alerts` | Yes | `org_admin` | Aggregated security incident alerts with severity, status, and event counts. |
+| `PATCH` | `/api/security/alerts/:id/status` | Yes | `org_admin` | Updates alert status (`acknowledged` or `resolved`) and writes audit log. |
+| `PATCH` | `/api/security/mfa-policy` | Yes | `org_admin` | Toggles organization-wide mandatory MFA requirement policy. |
+| `POST` | `/api/security/run-isolation-test` | Yes | `org_admin` | Executes 10 deterministic security scenarios against synthetic demo tenants and reports outcomes. |
+

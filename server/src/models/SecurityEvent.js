@@ -16,6 +16,9 @@ const securityEventSchema = new mongoose.Schema(
           'ISOLATION_BREACH_ATTEMPT',
           'BRUTE_FORCE_LOCKOUT',
           'MFA_DISABLED',
+          'MFA_VERIFICATION_FAILED',
+          'MFA_POLICY_VIOLATION',
+          'REPEATED_AUTH_FAILURE',
           'SUSPICIOUS_TOKEN_REUSE',
           'UNAUTHORIZED_CROSS_TENANT_PROBE',
           'CROSS_TENANT_ACCESS_DENIED',
@@ -41,6 +44,18 @@ const securityEventSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Alert description is required'],
       trim: true
+    },
+    eventCount: {
+      type: Number,
+      default: 1
+    },
+    firstSeenAt: {
+      type: Date,
+      default: Date.now
+    },
+    lastSeenAt: {
+      type: Date,
+      default: Date.now
     },
     metadata: {
       type: mongoose.Schema.Types.Mixed,

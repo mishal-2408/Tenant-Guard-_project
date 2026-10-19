@@ -233,7 +233,42 @@ export const loginUser = async ({ email, password, req }) => {
   // 7. Load Organization
   const organization = await Organization.findById(user.organizationId);
 
-  // 8. Sign Access Token
+  // 8. If Multi-Factor Authentication is enabled, issue restricted pre-auth token (do not issue session JWT)
+  if (user.mfaEnabled) {
+    const mfaPendingToken = signAccessToken(
+      {
+        userId: user._id,
+        organizationId: user.organizationId,
+        role: user.role,
+        isMfaPending: true
+      },
+      '5m'
+    );
+
+    await logAuditEvent({
+      organizationId: user.organizationId,
+      actorId: user._id,
+      actorEmail: user.email,
+      actorRole: user.role,
+      action: 'USER_LOGIN_MFA_CHALLENGE',
+      category: 'auth',
+      severity: 'info',
+      req,
+      status: 'success'
+    });
+
+    return {
+      mfaRequired: true,
+      mfaToken: mfaPendingToken,
+      user: {
+        id: user._id.toString(),
+        email: user.email,
+        firstName: user.firstName
+      }
+    };
+  }
+
+  // 9. Standard Non-MFA Flow: Sign Full Access Token
   const token = signAccessToken({
     userId: user._id,
     organizationId: user.organizationId,

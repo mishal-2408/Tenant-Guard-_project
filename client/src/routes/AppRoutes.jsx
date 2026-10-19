@@ -12,6 +12,7 @@ import Projects from '../pages/projects/Projects.jsx';
 import Tasks from '../pages/tasks/Tasks.jsx';
 import Team from '../pages/team/Team.jsx';
 import Settings from '../pages/settings/Settings.jsx';
+import SecurityCenter from '../pages/security/SecurityCenter.jsx';
 import NotFound from '../pages/errors/NotFound.jsx';
 import AccessDenied from '../pages/errors/AccessDenied.jsx';
 
@@ -54,6 +55,14 @@ export const AppRoutes = () => {
         <Route path="projects" element={<Projects />} />
         <Route path="tasks" element={<Tasks />} />
         <Route path="team" element={<Team />} />
+        <Route 
+          path="security" 
+          element={
+            <ProtectedRoute allowedRoles={['org_admin']}>
+              <SecurityCenter />
+            </ProtectedRoute>
+          } 
+        />
         <Route path="settings" element={<Settings />} />
       </Route>
 

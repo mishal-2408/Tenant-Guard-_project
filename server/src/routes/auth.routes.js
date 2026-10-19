@@ -1,6 +1,7 @@
 import express from 'express';
 import authController from '../controllers/auth.controller.js';
 import { registerSchema, loginSchema } from '../validators/auth.validator.js';
+import { verifyMfaLoginSchema, verifyMfaSetupSchema, disableMfaSchema } from '../validators/mfa.validator.js';
 import { validate } from '../middleware/validate.js';
 import { authenticate } from '../middleware/auth.js';
 import { enforceTenantContext, findTenantResource } from '../middleware/tenantGuard.js';
@@ -17,13 +18,19 @@ const router = express.Router();
 
 router.post('/register', authLimiter, validate(registerSchema), authController.register);
 router.post('/login', authLimiter, validate(loginSchema), authController.login);
+router.post('/mfa/verify-login', authLimiter, validate(verifyMfaLoginSchema), authController.verifyMfaLogin);
 
 // ==========================================
-// Authenticated Session Routes
+// Authenticated Session & MFA Routes
 // ==========================================
 
 router.post('/logout', authenticate, csrfProtection, authController.logout);
 router.get('/me', authenticate, authController.getMe);
+
+// MFA Management Routes
+router.post('/mfa/setup', authenticate, enforceTenantContext, authController.setupMfa);
+router.post('/mfa/verify-setup', authenticate, enforceTenantContext, csrfProtection, validate(verifyMfaSetupSchema), authController.verifyMfaSetup);
+router.post('/mfa/disable', authenticate, enforceTenantContext, csrfProtection, validate(disableMfaSchema), authController.disableMfa);
 
 // ==========================================
 // Verification & Middleware Test Routes

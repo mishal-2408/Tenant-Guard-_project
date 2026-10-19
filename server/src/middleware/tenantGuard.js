@@ -97,7 +97,7 @@ export const findTenantResource = async (Model, resourceId, req) => {
 
   if (foreignExists) {
     // Log security alert for cross-tenant probe
-    logSecurityEvent({
+    await logSecurityEvent({
       organizationId: tenantOrgId,
       eventType: 'CROSS_TENANT_ACCESS_DENIED',
       severity: 'high',
@@ -112,7 +112,7 @@ export const findTenantResource = async (Model, resourceId, req) => {
       req
     });
 
-    logAuditEvent({
+    await logAuditEvent({
       organizationId: tenantOrgId,
       actorId: req.user._id,
       actorEmail: req.user.email,

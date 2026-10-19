@@ -8,6 +8,7 @@ import projectRoutes from './routes/project.routes.js';
 import taskRoutes from './routes/task.routes.js';
 import teamRoutes from './routes/team.routes.js';
 import invitationRoutes from './routes/invitation.routes.js';
+import securityRoutes from './routes/security.routes.js';
 import { notFoundHandler } from './middleware/notFound.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
@@ -44,6 +45,7 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/team', teamRoutes);
 app.use('/api/invitations', invitationRoutes);
+app.use('/api/security', securityRoutes);
 
 // Root route
 app.get('/', (req, res) => {

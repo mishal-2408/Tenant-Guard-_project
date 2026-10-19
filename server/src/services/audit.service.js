@@ -76,18 +76,45 @@ export const logSecurityEvent = async ({
   try {
     const ipAddress = req?.ip || req?.socket?.remoteAddress || '';
     const userAgent = req?.headers?.['user-agent'] || '';
+    const sanitizedMetadata = {
+      ...sanitizePayload(metadata),
+      ipAddress,
+      userAgent
+    };
 
-    await SecurityEvent.create({
+    // Alert Window Aggregation: Group duplicate open alerts within 15 minutes
+    const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
+    const existingAlert = await SecurityEvent.findOne({
+      organizationId,
+      eventType,
+      status: 'open',
+      lastSeenAt: { $gte: fifteenMinutesAgo }
+    });
+
+    if (existingAlert) {
+      existingAlert.eventCount = (existingAlert.eventCount || 1) + 1;
+      existingAlert.lastSeenAt = new Date();
+      existingAlert.metadata = {
+        ...existingAlert.metadata,
+        ...sanitizedMetadata
+      };
+      // Escalate severity if event count reaches high thresholds
+      if (existingAlert.eventCount >= 5 && existingAlert.severity === 'warning') {
+        existingAlert.severity = 'high';
+      }
+      return await existingAlert.save();
+    }
+
+    return await SecurityEvent.create({
       organizationId,
       eventType,
       severity,
       title,
       description,
-      metadata: {
-        ...sanitizePayload(metadata),
-        ipAddress,
-        userAgent
-      }
+      eventCount: 1,
+      firstSeenAt: new Date(),
+      lastSeenAt: new Date(),
+      metadata: sanitizedMetadata
     });
   } catch (err) {
     console.error('[Security Event Recording Failed]:', err.message);

@@ -36,7 +36,30 @@ export const authApi = {
   /**
    * Test endpoint accessible to all roles including Viewers
    */
-  testViewerAllowed: () => apiClient.get('/auth/test/viewer-allowed')
+  testViewerAllowed: () => apiClient.get('/auth/test/viewer-allowed'),
+
+  /**
+   * Initializes TOTP MFA setup, returns secret key and QR code data URL
+   */
+  setupMfa: () => apiClient.post('/auth/mfa/setup'),
+
+  /**
+   * Verifies initial 6-digit TOTP token to activate MFA for user
+   * @param {Object} data - { token }
+   */
+  verifyMfaSetup: (data) => apiClient.post('/auth/mfa/verify-setup', data),
+
+  /**
+   * Completes multi-factor authentication challenge during login
+   * @param {Object} data - { mfaToken, token }
+   */
+  verifyMfaLogin: (data) => apiClient.post('/auth/mfa/verify-login', data),
+
+  /**
+   * Disables MFA requiring current account password and valid 6-digit TOTP token
+   * @param {Object} data - { password, token }
+   */
+  disableMfa: (data) => apiClient.post('/auth/mfa/disable', data)
 };
 
 export const healthApi = {

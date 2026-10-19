@@ -54,6 +54,17 @@ export const authenticate = async (req, res, next) => {
     });
   }
 
+  // Pre-authentication state cannot access protected application resources
+  if (decoded.isMfaPending) {
+    return res.status(401).json({
+      success: false,
+      error: {
+        code: 'AUTH_MFA_REQUIRED',
+        message: 'Multi-factor authentication verification is required to complete login.'
+      }
+    });
+  }
+
   try {
     // 3. Check for Platform Super Administrator Session (Decoupled Collection)
     if (decoded.role === 'platform_super_admin') {

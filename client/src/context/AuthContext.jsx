@@ -45,6 +45,9 @@ export const AuthProvider = ({ children }) => {
     setAuthError(null);
     try {
       const res = await authApi.login(credentials);
+      if (res?.mfaRequired) {
+        return { mfaRequired: true, mfaToken: res.mfaToken };
+      }
       if (res?.success && res.data) {
         setUser(res.data.user);
         setOrganization(res.data.organization);
@@ -53,6 +56,25 @@ export const AuthProvider = ({ children }) => {
       throw new Error('Malformed login response');
     } catch (err) {
       setAuthError(err.message || 'Login failed.');
+      throw err;
+    }
+  };
+
+  /**
+   * Completes multi-factor authentication challenge during login
+   */
+  const verifyMfaLogin = async ({ mfaToken, token }) => {
+    setAuthError(null);
+    try {
+      const res = await authApi.verifyMfaLogin({ mfaToken, token });
+      if (res?.success && res.data) {
+        setUser(res.data.user);
+        setOrganization(res.data.organization);
+        return { success: true };
+      }
+      throw new Error('Malformed MFA verification response');
+    } catch (err) {
+      setAuthError(err.message || 'MFA verification failed.');
       throw err;
     }
   };
@@ -97,6 +119,7 @@ export const AuthProvider = ({ children }) => {
     isLoading,
     authError,
     login,
+    verifyMfaLogin,
     register,
     logout,
     checkSession

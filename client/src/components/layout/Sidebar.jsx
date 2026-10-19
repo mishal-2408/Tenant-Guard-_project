@@ -2,6 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
   ShieldCheck, 
+  ShieldAlert,
   LayoutDashboard, 
   FolderKanban, 
   CheckSquare, 
@@ -20,6 +21,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
     { to: '/projects', label: 'Projects', icon: FolderKanban },
     { to: '/tasks', label: 'Tasks', icon: CheckSquare },
     { to: '/team', label: 'Team', icon: Users },
+    ...(user?.role === 'org_admin' ? [{ to: '/security', label: 'Security Center', icon: ShieldAlert }] : []),
     { to: '/settings', label: 'Settings', icon: Settings }
   ];
 
